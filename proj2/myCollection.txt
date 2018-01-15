@@ -1,0 +1,17 @@
+0    Sandshrew   77    7     1     
+0    Sandshrew   87    7     1     
+0    Haunter     1311  90    3     
+0    Haunter     1061  90    3     
+0    Oddish      361   36    3     
+0    Abra        601   60    1     
+0    Slowpoke    1078  107   3     
+0    Wartortle   559   55    4     
+0    Venomoth    1035  103   4     
+0    Cubone      554   55    2     
+0    Meowth      460   46    1     
+0    Nidoking    1712  171   5     
+0    Vileplume   1643  164   5     
+0    Koffing     1032  103   3     
+0    Magmar      1374  137   5     
+0    Geodude     427   42    1     
+0    Nidoran(m)  480   48    1     

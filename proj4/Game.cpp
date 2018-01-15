@@ -1,0 +1,188 @@
+/*
+File: Game.cpp
+Project: CMSC 202 Project 4, Fall 2016
+Author: Ujjwal Rehani
+Date: 11/25/2016
+Email: urehani1@umbc.edu
+
+This file contains the main driver program for Class.h.
+It contains the implementations of the class functions
+for class Game which controls the entire game.
+*/
+
+#include<iomanip>
+#include "Game.h"
+
+//Constructor initlizes 
+Game::Game()
+{
+    m_levels = NumLevels();
+    m_level = 1;
+    
+    m_ben = NULL;
+    InitBen();
+    m_mons = NULL;
+    InitMonsters();
+    Start(100);
+}
+
+//Destructor deletes all dynamically allocated data
+Game::~Game()
+{
+    if (m_ben != NULL) {
+        for (int i=0; i<3; i++) {
+            delete m_ben[i];
+        } 
+        delete m_ben;
+        m_ben = NULL;
+    }
+    if (m_mons != NULL) {
+        for (int i=0; i<m_levels; i++) {
+            delete m_mons[i];
+        } 
+        delete m_mons;
+        m_mons = NULL;
+    }
+}
+
+//Dynamically allocated m_mons with on monster per level
+void Game::InitMonsters()
+{
+     m_mons = new Monster*[m_levels];
+     for (int level = 0; level < m_levels; level++) {
+         m_mons[level] = new Monster(level);
+         m_mons[level]->LoadMonster();
+         m_mons[level]->SummonMonster();
+     }
+}
+
+//Dynamically allocates m_ben with all possible forms
+void Game::InitBen()
+{
+     m_ben = new Ben*[3];
+     m_ben[0] = new Ben("Ben", 100, "hand-to-hand", "kick", 0.0, 0.1, 0, 2, 10, 20, 25);
+     m_ben[1] = new Pyronite("Pyronite", 100, "fire", "flamer", 0.0, 0.15, 0, 1, 15, 20, 30);
+     m_ben[2] = new Crystalsapien("Crystalsapien", 100, "energy", "laser", 0.25, 0.25, 0, 1, 25, 30, 10);
+}
+
+//Sets m_currBen based on user choice
+void Game::SetBen(int startLife)
+{
+    int ben_no;
+    
+    cout << "Select one from the available forms of Ben at level " << m_level << " are:" << endl;
+    //Sets m_formsBen to appropriate level
+    if (m_level == 1)
+        m_formsBen = 1;
+    else if (m_level == 2)
+        m_formsBen = 2;
+    else
+        m_formsBen = 3;
+    
+    for (int i=0; i<m_formsBen; i++)
+        cout << (i+1) << ". " << m_ben[i]->GetName() << endl;
+     
+    do {
+      //Bounds checks to make sure user picks appropriate choices
+        cout << "What would you like to do?" << endl;
+        cout << "Enter 1 to " << m_formsBen << endl;
+        cin >> ben_no;
+        if (ben_no < 1 || ben_no > m_formsBen)
+           cout << "Invalid input; please re-enter." << endl;
+    } while (ben_no < 1 || ben_no > m_formsBen);
+    
+    m_currBen = m_ben[ben_no-1];
+    m_currBen->SetLife(startLife);
+    cout << "BEN: " << m_currBen->GetName() << endl;
+}
+
+//Starts the game
+void Game::Start(int startLife)
+{
+   
+  int ben_attack, mon_attack;
+    
+    while (true) {
+	    cout << setw(24) << " " << "The game starts...." << endl;
+	    cout << setw(24) << " " << "Level " << m_level << " of " << m_levels << endl;
+	
+	    int initlife = startLife;
+        if(m_level > 1)
+            initlife = m_currBen->GetLife();
+        //cout << "Initial Life: " << initlife << ", m_level = " << m_level << endl;
+        SetBen(initlife);
+	    m_currMons = m_mons[m_level-1];
+	    cout << "MONSTER: " << m_currMons->GetName() << endl;
+	    
+	    cout << "The start life of " << m_currBen->GetName() << " is: " << m_currBen->GetLife() << endl;
+	    cout << "The start life of " << m_currMons->GetName() << " is: " << m_currMons->GetLife() << endl;
+	    
+	    while (true) {
+	        cout << m_currBen->GetName() << ": " << m_currBen->GetLife() << "    " << m_currMons->GetName() << ": " << m_currMons->GetLife() << endl;
+		//Asks user for type of attack
+	        do {
+	            cout << "What would you like to do?" << endl;
+	            cout << "1. Normal Attack" << endl;
+	            cout << "2. Special Attack" << endl;
+	            cout << "3. Ultimate Attack" << endl;
+	            cout << "Enter 1 to 3" << endl;
+	            cin >> ben_attack;
+	            if (ben_attack < 1 || ben_attack > 3)
+	               cout << "Invalid input; please re-enter." << endl;
+	        } while (ben_attack < 1 || ben_attack > 3);
+	        //Ben performs selected attack
+	        switch (ben_attack) {
+	        	case 1: m_currBen->Attack(m_currMons); break;
+	        	case 2: m_currBen->SpecialAttack(m_currMons); break;
+	        	case 3: m_currBen->UltimateAttack(m_currMons); break;
+			}
+	        
+	        if (m_currMons->GetLife() > 0) {
+	            cout << m_currMons->GetName() << " attacks " << m_currBen->GetName() << " using a normal attack." << endl;
+	            m_currMons->Attack(m_currBen);
+	        } else break; // Monster loses
+	        
+	        if (m_currBen->GetLife() <= 0)
+	           break;
+	    }
+	    
+	    //Once monster life reaches O, Ben wins
+	    if (m_currMons->GetLife() <= 0) {
+	    	cout << "Congrats! " << m_currBen->GetName() << " won that level." << endl;
+	    	if (m_level >= m_levels) {
+	    		cout << "Congrats! You won the game." << endl;
+	    		break;
+			} else {
+				/*if (m_ben != NULL) {
+			        for (int i=0; i<m_formsBen; i++) {
+			            delete m_ben[i];
+			        } 
+			        delete m_ben;
+			        m_ben = NULL;
+			    }*/
+				m_level++;
+				//InitBen();
+			}
+		//If Ben's life reaches 0 first then Ben loses
+		} else if (m_currBen->GetLife() <= 0) {
+			cout << "Sorry! You lost the game." << endl;
+	    	break;
+		}
+	    
+	}
+}
+
+
+int Game::NumLevels()
+{
+    int levels = -1;
+    
+    do {
+        cout << "How many levels would you like to try?" << endl;
+        cin >> levels;
+        if (levels < 1 || levels > 20)
+           cout << "You should do less than 20 levels!" << endl;
+    } while (levels < 1 || levels > 20);
+   
+    return levels;
+}
